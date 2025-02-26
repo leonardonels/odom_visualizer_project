@@ -52,9 +52,14 @@ class VisualizerNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     visualizer_node = VisualizerNode()
-    rclpy.spin(visualizer_node)
-    visualizer_node.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(visualizer_node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if rclpy.ok():
+            visualizer_node.destroy_node()
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':
