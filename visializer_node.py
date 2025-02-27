@@ -38,7 +38,7 @@ class VisualizerNode(Node):
         pos_x = msg.pose.pose.position.z  # Punto esterno x
         pos_y = msg.pose.pose.orientation.w  # Punto esterno y
 
-        r=R.from_euler('xzy', [msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z])
+        r=R.from_euler('xyz', [msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z])
         r_matrix=r.as_matrix()
 
         # Aggiorna il punto attuale sul circuito
@@ -49,8 +49,11 @@ class VisualizerNode(Node):
 
         # Calcola il punto finale del segmento (direzione della macchina)
         vector_length = 100.0
-        end_x = pos_x + vector_length * r_matrix[2][0]
-        end_y = pos_y + vector_length * r_matrix[0][0]
+        end_x = pos_x + vector_length * r_matrix[0][2]
+        end_y = pos_y + vector_length * r_matrix[2][2]
+        
+        theta = np.arctan2(r_matrix[2,2], r_matrix[0,2])
+        print(f'x: {pos_x}, y: {pos_y}, yaw: {theta}')
 
         # Aggiorna la linea
         self.yaw_line.set_data([pos_x, end_x], [pos_y, end_y])
