@@ -19,11 +19,10 @@ class VisualizerNode(Node):
             self.odom_callback,
             qos_profile)
 
-        # Carica il circuito dal file CSV
         self.circuit_data = pd.read_csv('vallelunga1_circuit.csv')
         self.fig, self.ax = plt.subplots()
         self.ax.plot(self.circuit_data['x'], self.circuit_data['y'], label='Circuito')
-        self.point_plot, = self.ax.plot([], [], 'go', markersize=8, label='Posizione attuale')
+        #self.point_plot, = self.ax.plot([], [], 'go', markersize=8, label='Posizione attuale')
         self.external_plot, = self.ax.plot([], [], 'ro', markersize=6, label='Punto esterno')
         self.yaw_line, = self.ax.plot([], [], 'r-', linewidth=2, label='Yaw')
         self.ax.legend()
@@ -31,23 +30,21 @@ class VisualizerNode(Node):
         plt.show()
     
     def odom_callback(self, msg):
-        # Estrai i dati dalla posizione e orientamento
-        nn_pos_x = msg.pose.pose.position.x
-        nn_pos_y = msg.pose.pose.position.y
+        #nn_pos_x = msg.pose.pose.position.x
+        #nn_pos_y = msg.pose.pose.position.y
+        pos_x = msg.pose.pose.position.x
+        pos_y = msg.pose.pose.position.y
         
-        pos_x = msg.pose.pose.position.z  # Punto esterno x
-        pos_y = msg.pose.pose.orientation.w  # Punto esterno y
+        #pos_x = msg.pose.pose.position.z  # Punto esterno x
+        #pos_y = msg.pose.pose.orientation.w  # Punto esterno y
 
-        r=R.from_euler('xyz', [msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z])
-        r_matrix=r.as_matrix()
+        q=R.from_quat([msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z,msg.pose.pose.orientation.w])
+        r_matrix=q.as_matrix()
 
-        # Aggiorna il punto attuale sul circuito
-        self.point_plot.set_data(nn_pos_x, nn_pos_y)
+        #self.point_plot.set_data(nn_pos_x, nn_pos_y)
         
-        # Aggiorna il punto esterno
         self.external_plot.set_data(pos_x, pos_y)
 
-        # Calcola il punto finale del segmento (direzione della macchina)
         vector_length = 100.0
         end_x = pos_x + vector_length * r_matrix[0][2]
         end_y = pos_y + vector_length * r_matrix[2][2]
@@ -55,7 +52,6 @@ class VisualizerNode(Node):
         theta = np.arctan2(r_matrix[2,2], r_matrix[0,2])
         print(f'x: {pos_x}, y: {pos_y}, yaw: {theta}')
 
-        # Aggiorna la linea
         self.yaw_line.set_data([pos_x, end_x], [pos_y, end_y])
         
         self.ax.relim()
