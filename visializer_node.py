@@ -22,7 +22,7 @@ class VisualizerNode(Node):
         self.circuit_data = pd.read_csv('vallelunga1_circuit.csv')
         self.fig, self.ax = plt.subplots()
         self.ax.plot(self.circuit_data['x'], self.circuit_data['y'], label='Circuito')
-        #self.point_plot, = self.ax.plot([], [], 'go', markersize=8, label='Posizione attuale')
+        self.point_plot, = self.ax.plot([], [], 'go', markersize=8, label='Posizione attuale')
         self.external_plot, = self.ax.plot([], [], 'ro', markersize=6, label='Punto esterno')
         self.yaw_line, = self.ax.plot([], [], 'r-', linewidth=2, label='Yaw')
         self.ax.legend()
@@ -30,18 +30,16 @@ class VisualizerNode(Node):
         plt.show()
     
     def odom_callback(self, msg):
-        #nn_pos_x = msg.pose.pose.position.x
-        #nn_pos_y = msg.pose.pose.position.y
+        nn_pos_x = msg.twist.twist.linear.x
+        nn_pos_y = msg.twist.twist.linear.y
+
         pos_x = msg.pose.pose.position.x
         pos_y = msg.pose.pose.position.y
-        
-        #pos_x = msg.pose.pose.position.z  # Punto esterno x
-        #pos_y = msg.pose.pose.orientation.w  # Punto esterno y
 
         q=R.from_quat([msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z,msg.pose.pose.orientation.w])
         r_matrix=q.as_matrix()
 
-        #self.point_plot.set_data(nn_pos_x, nn_pos_y)
+        self.point_plot.set_data(nn_pos_x, nn_pos_y)
         
         self.external_plot.set_data(pos_x, pos_y)
 
