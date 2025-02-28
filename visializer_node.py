@@ -50,7 +50,7 @@ class VisualizerNode(Node):
 
         self.yaw_line.set_data([pos_x, end_x], [pos_y, end_y])
 
-        debby_length = 1.0
+        debby_length = 10.0
         debby_x = nn_pos_x + debby_length * msg.pose.pose.position.z
         debby_y = nn_pos_y + debby_length * msg.twist.twist.linear.z
 
