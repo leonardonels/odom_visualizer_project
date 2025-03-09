@@ -28,10 +28,11 @@ class VisualizerNode(Node):
             qos_profile
         )
 
-        self.circuit_data = pd.read_csv('vallelunga_x_y_r_v.csv')
+        self.circuit_data = pd.read_csv('vallelunga_x_y_r_v_undersampled_512.csv')
         self.fig, self.ax = plt.subplots()
         self.ax.plot(self.circuit_data['x'], self.circuit_data['y'], label='Circuito')
-        self.point_plot, = self.ax.plot([], [], 'go', markersize=8, label='Posizione attuale')
+        self.ax.scatter(x='x', y='y', data=self.circuit_data, s=4, label='samppling')
+        self.point_plot, = self.ax.plot([], [], 'go', markersize=5, label='Posizione attuale')
         self.external_plot, = self.ax.plot([], [], 'ro', markersize=6, label='Punto esterno')
         self.yaw_line, = self.ax.plot([], [], 'r-', linewidth=2, label='Yaw')
         self.debby_line, = self.ax.plot([], [], 'b-', linewidth=2, label='debby')
@@ -62,7 +63,7 @@ class VisualizerNode(Node):
 
             self.external_plot.set_data(pos_x, pos_y)
 
-            vector_length = 100.0
+            vector_length = 10.0
             end_x = pos_x + vector_length * r_matrix[0][2]
             end_y = pos_y + vector_length * r_matrix[2][2]
 
