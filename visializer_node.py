@@ -12,14 +12,23 @@ class VisualizerNode(Node):
         super().__init__('visualizer_node')
 
         qos_profile = QoSProfile(reliability=QoSReliabilityPolicy.BEST_EFFORT, depth=10)
+        self.current_pose = Odometry()
+        self.node_res = Odometry()
 
         self.subscription = self.create_subscription(
             Odometry,
             'debug/odometry',
-            self.odom_callback,
+            self.node_callback,
             qos_profile)
 
-        self.circuit_data = pd.read_csv('vallelunga1_circuit.csv')
+        self.subscription = self.create_subscription(
+            Odometry,
+            'odometry',
+            self.ac_callback,
+            qos_profile
+        )
+
+        self.circuit_data = pd.read_csv('vallelunga_x_y_r_v.csv')
         self.fig, self.ax = plt.subplots()
         self.ax.plot(self.circuit_data['x'], self.circuit_data['y'], label='Circuito')
         self.point_plot, = self.ax.plot([], [], 'go', markersize=8, label='Posizione attuale')
@@ -29,42 +38,51 @@ class VisualizerNode(Node):
         self.ax.legend()
         plt.ion()
         plt.show()
+
+    def ac_callback(self, msg):
+        self.current_pose = msg
+        self.odom_callback()
+
+    def node_callback(self,msg):
+        self.node_res = msg
+        self.odom_callback()
     
-    def odom_callback(self, msg):
-        nn_pos_x = msg.twist.twist.linear.x
-        nn_pos_y = msg.twist.twist.linear.y
+    def odom_callback(self):
+        if(self.node_res._header.stamp == self.current_pose.header.stamp):
+            nn_pos_x = self.node_res.pose.pose.position.x
+            nn_pos_y = self.node_res.pose.pose.position.y
 
-        pos_x = msg.pose.pose.position.x
-        pos_y = msg.pose.pose.position.y
+            pos_x = self.current_pose.pose.pose.position.x
+            pos_y = self.current_pose.pose.pose.position.y
 
-        q=R.from_quat([msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z,msg.pose.pose.orientation.w])
-        r_matrix=q.as_matrix()
+            q=R.from_quat([self.current_pose.pose.pose.orientation.x,self.current_pose.pose.pose.orientation.y,self.current_pose.pose.pose.orientation.z,self.current_pose.pose.pose.orientation.w])
+            r_matrix=q.as_matrix()
 
-        self.point_plot.set_data(nn_pos_x, nn_pos_y)
-        
-        self.external_plot.set_data(pos_x, pos_y)
+            self.point_plot.set_data(nn_pos_x, nn_pos_y)
 
-        vector_length = 100.0
-        end_x = pos_x + vector_length * r_matrix[0][2]
-        end_y = pos_y + vector_length * r_matrix[2][2]
+            self.external_plot.set_data(pos_x, pos_y)
 
-        self.yaw_line.set_data([pos_x, end_x], [pos_y, end_y])
+            vector_length = 100.0
+            end_x = pos_x + vector_length * r_matrix[0][2]
+            end_y = pos_y + vector_length * r_matrix[2][2]
 
-        debby_length = 10.0
-        debby_x = nn_pos_x + debby_length * msg.pose.pose.position.z
-        debby_y = nn_pos_y + debby_length * msg.twist.twist.linear.z
+            self.yaw_line.set_data([pos_x, end_x], [pos_y, end_y])
 
-        self.debby_line.set_data([nn_pos_x, debby_x], [nn_pos_y, debby_y])
+            debby_length = 1.0
+            debby_x = nn_pos_x + debby_length * self.node_res.twist.twist.linear.x
+            debby_y = nn_pos_y + debby_length * self.node_res.twist.twist.linear.y
 
-        
-        theta = np.arctan2(r_matrix[2,2], r_matrix[0,2])
-        print(f'x: {pos_x}, y: {pos_y}, yaw: {theta}')
+            self.debby_line.set_data([nn_pos_x, debby_x], [nn_pos_y, debby_y])
 
-        
-        self.ax.relim()
-        self.ax.autoscale_view()
-        plt.draw()
-        plt.pause(0.01)
+
+            theta = np.arctan2(r_matrix[2,2], r_matrix[0,2])
+            #print(f'x: {pos_x}, y: {pos_y}, yaw: {theta}')
+
+
+            self.ax.relim()
+            self.ax.autoscale_view()
+            plt.draw()
+            plt.pause(0.01)
 
 
 def main(args=None):
