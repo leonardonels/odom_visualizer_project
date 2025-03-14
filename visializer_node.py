@@ -59,9 +59,9 @@ class VisualizerNode(Node):
             q=R.from_quat([self.current_pose.pose.pose.orientation.x,self.current_pose.pose.pose.orientation.y,self.current_pose.pose.pose.orientation.z,self.current_pose.pose.pose.orientation.w])
             r_matrix=q.as_matrix()
 
-            self.point_plot.set_data(nn_pos_x, nn_pos_y)
+            self.point_plot.set_data([nn_pos_x], [nn_pos_y])
 
-            self.external_plot.set_data(pos_x, pos_y)
+            self.external_plot.set_data([pos_x], [pos_y])
 
             vector_length = 10.0
             end_x = nn_pos_x + vector_length * r_matrix[0][2]
