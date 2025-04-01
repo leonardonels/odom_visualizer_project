@@ -17,24 +17,24 @@ class VisualizerNode(Node):
 
         self.subscription = self.create_subscription(
             Odometry,
-            'debug/odometry',
+            'debug/debby',
             self.node_callback,
             qos_profile)
 
         self.subscription = self.create_subscription(
             Odometry,
-            'odometry',
+            'simulation_state',
             self.ac_callback,
             qos_profile
         )
 
-        self.circuit_data = pd.read_csv('vallelunga_x_y_r_v_undersampled_512.csv')
+        self.circuit_data = pd.read_csv('varano_autocross_x_y_r_v.csv')
         self.fig, self.ax = plt.subplots()
         self.ax.plot(self.circuit_data['x'], self.circuit_data['y'], label='Circuito')
         self.ax.scatter(x='x', y='y', data=self.circuit_data, s=4, label='samppling')
         self.point_plot, = self.ax.plot([], [], 'go', markersize=5, label='Posizione attuale')
         self.external_plot, = self.ax.plot([], [], 'ro', markersize=6, label='Punto esterno')
-        self.yaw_line, = self.ax.plot([], [], 'r-', linewidth=2, label='Yaw')
+        #self.yaw_line, = self.ax.plot([], [], 'r-', linewidth=2, label='Yaw')
         self.debby_line, = self.ax.plot([], [], 'b-', linewidth=2, label='debby')
         self.ax.legend()
         plt.ion()
@@ -56,18 +56,18 @@ class VisualizerNode(Node):
             pos_x = self.current_pose.pose.pose.position.x
             pos_y = self.current_pose.pose.pose.position.y
 
-            q=R.from_quat([self.current_pose.pose.pose.orientation.x,self.current_pose.pose.pose.orientation.y,self.current_pose.pose.pose.orientation.z,self.current_pose.pose.pose.orientation.w])
-            r_matrix=q.as_matrix()
+            #q=R.from_quat([self.current_pose.pose.pose.orientation.x,self.current_pose.pose.pose.orientation.y,self.current_pose.pose.pose.orientation.z,self.current_pose.pose.pose.orientation.w])
+            #r_matrix=q.as_matrix()
 
             self.point_plot.set_data([nn_pos_x], [nn_pos_y])
 
             self.external_plot.set_data([pos_x], [pos_y])
 
-            vector_length = 10.0
-            end_x = nn_pos_x + vector_length * r_matrix[0][2]
-            end_y = nn_pos_y + vector_length * r_matrix[2][2]
+            #vector_length = 10.0
+            #end_x = nn_pos_x + vector_length * r_matrix[0][2]
+            #end_y = nn_pos_y + vector_length * r_matrix[2][2]
 
-            self.yaw_line.set_data([pos_x, end_x], [pos_y, end_y])
+            #self.yaw_line.set_data([pos_x, end_x], [pos_y, end_y])
 
             debby_length = 1.0
             debby_x = nn_pos_x + debby_length * self.node_res.twist.twist.linear.x
@@ -76,7 +76,7 @@ class VisualizerNode(Node):
             self.debby_line.set_data([nn_pos_x, debby_x], [nn_pos_y, debby_y])
 
 
-            theta = np.arctan2(r_matrix[2,2], r_matrix[0,2])
+            #theta = np.arctan2(r_matrix[2,2], r_matrix[0,2])
             #print(f'x: {pos_x}, y: {pos_y}, yaw: {theta}')
 
 
